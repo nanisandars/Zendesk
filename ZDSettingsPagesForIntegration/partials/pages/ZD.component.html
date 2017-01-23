@@ -1,0 +1,184 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div class="row">
+            <div class=" col-md-3 cc-bottom-margin">
+                <div>
+                    <input [disabled]="ZDCredentials" class="cc-inputtext ng-untouched ng-pristine ng-valid" placeholder="Zendesk Admin API Key"
+                        type="text" [(ngModel)]="ZDKey" />
+                </div>
+            </div>
+            <div class="col-md-3 cc-bottom-margin">
+                <div>
+                    <input [disabled]="ZDCredentials" class="cc-inputtext ng-untouched ng-pristine ng-valid" placeholder="Zendesk URL" type="text"
+                        [(ngModel)]="ZDURL">
+                </div>
+            </div>
+            <div class="col-md-3 cc-bottom-margin">
+                <div>
+                    <input [disabled]="ZDCredentials" class="cc-inputtext ng-untouched ng-pristine ng-valid" placeholder="Zendesk Admin Email"
+                        type="text" [(ngModel)]="ZDEmail">
+                </div>
+            </div>
+            <div class="col-md-2 cc-bottom-margin">
+                <div>
+                    <button class="md-raised md-primary cc-round-corner-button" (click)=Connect(true) [disabled]="ZDCredentials" md-raised-button>
+                    <span class="md-button-wrapper">
+                        <img src="../../Image/cc-logo-dash.png" height="24px" width="24px" style="vertical-align:top;">
+                        <i class="fa fa-exchange"></i>
+                        <img src="../../Image/Zendesk.png">                                   
+                    </span>
+                </button>
+                </div>
+            </div>
+        </div>
+        <!-- Loading Symbol -->
+        <div class="row">
+            <div class="pull-left">
+                <div *ngIf="showloading"> <i class="fa fa-spinner fa-spin fa-1x fa-fw"></i>
+                    <span class="sr-only"></span>Loading...
+                </div>
+            </div>
+        </div>
+        <!-- End of Loading Symbol -->
+
+        <!-- Error messages when connect button is clicked -->
+        <div class=" pull-right">
+            <span style="font-weight:bold;text-align:right;color:red;">{{Message}}</span>
+        </div>
+        <!-- End Of Error messages -->
+
+        <br/>
+        <div *ngIf="ZDCredentials&&showmappings">
+            <label class="cc-material-label">Mapping the question tags to Zendesk fields (Customer data)</label>
+            <br/>
+            <div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="col-md-3">
+                            <span *ngIf="EditQuestiontag">                                                    
+                            <select [(ngModel)]="Tagdata" id="drpEdit" class="form-control cc-select ng-pristine ng-valid ng-touched">
+                                <option value="">--Select a question tag--</option>
+                                <option *ngFor="#opt of EditQuestiontag " value="{{existingCCTags[opt]}}"> {{ opt }}</option>
+                            </select>
+                        </span>
+                            <span *ngIf="!EditQuestiontag">         
+                            <select [(ngModel)]="Tagdata" id="drpEdit" class="form-control cc-select ng-pristine ng-valid ng-touched">
+                                <option value="">--Select a question tag--</option>
+                                <option *ngFor="#opt of existingCCKeys " value="{{existingCCTags[opt]}}"  > {{ opt.toString().toLowerCase() }}</option>
+                            </select> 
+                        </span>
+                        </div>
+                        <div class="col-md-3">
+                            <select [(ngModel)]="Field" class="form-control cc-select ng-pristine ng-valid ng-touched">
+                            <option value="">--Select a Zendesk field--</option>
+                            <option *ngFor="#opt of ZDFields; #i= index" value="{{ZDFields[i].type}}::{{ZDFields[i].title.toString().toLowerCase()}}" >{{ opt.title.toString().toLowerCase() }}</option>
+                        </select>
+                        </div>
+                        <div class="col-md-2">
+                            <i class="fa fa-map-marker fa-2x" style="color:#2196f3" title="Map tag to fields" (click)="AddMapping(Tagdata,Field)"></i>
+                        </div>
+
+                        <!-- Error messages when mapping button are being clicked -->
+                        <div class="col-md-4">
+                            <span style="color:red;font-weight:bold;text-align:right">{{InsertError}}</span>
+                        </div>
+                        <!-- End Of Error messages -->
+
+                    </div>
+                    <div>&nbsp;</div>
+                    <div class="row" *ngIf="Tagmapping">
+
+                        <div class="col-md-4">
+                        </div>
+                        <div class="col-md-4">
+                            <span class="pull-right">
+                            <input type="text" class="cc-inputtext ng-untouched ng-pristine ng-valid" name="Search" placeholder="Search" [(ngModel)]="searchKey" (change)="SearchMap()" />
+                           
+                        </span>
+                        </div>
+                        <div class="col-md-1"> <i style="  position: relative;z-index: 1;left: -25px;top: 10px;color: #2196f3;cursor:pointer;width: 0;"
+                                class="fa fa-search pull-left"></i></div>
+                        <div class="col-md-3">&nbsp;</div>
+                    </div>
+                    <div class="row" *ngIf="Tagmapping">
+                        <div class="col-md-8">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 cc-common-table cc-padding cc-notification-table">
+                                <!-- Paging Needed for the below table -->
+                                <!-- Beginning of table -->
+                                <table class="table md-data-table" layout-fill="">
+                                    <thead>
+                                        <tr style="background-color:#F2F2F2;">
+                                            <th class="md-text-cell-SF" (click)="SortMap('Tag')" style="cursor:pointer">Question Tag</th>
+                                            <th class="md-text-cell-SF" (click)="SortMap('Field')" style="cursor:pointer">ZD Field</th>
+                                            <th class="md-text-cell-SF" width="30%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="text-align:left;" *ngFor="#map of Tagmapping">
+                                            <td class="md-text-cell-SF">
+                                                <a>{{map.Tag.slice(0,20)}}<span *ngIf="map.Tag.length>20">...</span> </a>
+                                            </td>
+                                            <td class="md-text-cell-SF">
+                                                <a>{{map.Field.slice(0,25)}}<span *ngIf="map.Field.length>25">...</span></a>
+                                            </td>
+                                            <td class="md-text-cell-SF">
+                                                <span *ngIf="map.Field.toUpperCase() != 'NAME'&& map.Field.toUpperCase() != 'EMAIL'&& map.Field.toUpperCase() != 'SUBJECT'&& map.Field.toUpperCase() != 'DESCRIPTION'&& map.Field.toUpperCase() != 'MOBILE'">
+
+                                                <span *ngIf="map.disabled!='true'"  style="color:blue; cursor:pointer;" title="Click to edit">
+                                                    <a *ngIf="map._Id!=InsertEditid"   (click)="ShowinPopup(map,'Edit')">
+                                                        <i class="fa fa-pencil" aria-hidden="true" ></i>
+                                                    </a>
+                                                    <a *ngIf="map._Id==InsertEditid"  title="Click to cancel" (click)="CancelEdit()" title="Click to cancel edit" >
+                                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                                    </a>
+                                                </span>
+                                                <span *ngIf="map.disabled=='true'" style="color:Green;  cursor:pointer;" (click)="ShowinPopup(map,'Enable')" title="Click to enable"> 
+                                                    <a>
+                                                        <i class="fa fa-check" aria-hidden="true"></i>
+                                                    </a>
+                                                </span>
+                                                <span *ngIf="map.disabled!='true'" style="color:Red;  cursor:pointer;" (click)="ShowinPopup(map,'Disable')" title="Click to disable">
+                                                    <a>
+                                                        <i class="fa fa-ban" aria-hidden="true"></i>
+                                                    </a> 
+                                                </span>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot *ngIf="Tagmapping.length==0">
+                                        <tr style="text-align:left;">
+                                            <td class="md-text-cell-SF" colspan="3">No Mappings exist </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <!-- End of table -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NG MODAL DIALOG -->
+<div id="myModal" class="modal fade" *ngIf="samplemodal" style="width:30%;display: block; opacity: 1;margin-top:50px;margin-left:35%; ">
+    <div>
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" (click)="ngModalClose()">&times;</button>
+                <h4 class="modal-title">{{modalTitle}}</h4>
+            </div>
+            <div class="modal-body">
+                <p>{{PopupMessage}}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" (click)="ConfirmAction();ngModalClose()"> Yes</button>
+                <button type="button" class="btn btn-default" (click)="ngModalClose()">No</button>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,108 @@
+<div class="row">
+  <div class="col-md-4" *ngIf="ExceptionRecordsListBackUp">
+    <div class=" pull-right" *ngIf="ExceptionRecordsListBackUp.length>0">
+      <button type="button" [disabled]="EnableDisableArchive()" (click)="ArchiveTokenExceptions()" class="btn btn-primary">Archive</button>
+    </div>
+    <div class=" pull-right" *ngIf="ExceptionRecordsListBackUp.length>0">
+      <button type="button" [disabled]=" EnableDisableTrigger()" (click)="RetriggerExceptions()" class="btn btn-success ">Retry</button>
+    </div>
+  </div>
+  <div class="col-md-4" *ngIf="ExceptionRecordsListBackUp">
+    <div *ngIf="ExceptionRecordsListBackUp.length>0">
+      <span class="pull-right">
+          <input type="text" class="cc-inputtext ng-untouched ng-pristine ng-valid" name="Search" placeholder="Search" [(ngModel)]="SearchRecord" (change)="ExceptionRecordsList=SearchRecords(ExceptionRecordsListBackUp)" /><i style="  position: relative;z-index: 1;left: -25px;top: 1px;color: #2196f3;cursor:pointer;width: 0;" class="fa fa-search"></i>
+      </span>
+    </div>
+  </div>
+</div>
+<br>
+
+<!-- Loading Symbol -->
+<div *ngIf="!ExceptionRecordsListBackUp"> <i class="fa fa-spinner fa-spin fa-1x fa-fw"></i>
+  <span class="sr-only">Loading...</span>Loading...
+</div>
+<!-- End of Loading Symbol -->
+
+<!-- Paging Needed for the below table -->
+<!-- Beginning of table -->
+<table *ngIf="ExceptionRecordsList" class="table">
+  <thead>
+    <tr>
+      <th (click)="SortRecords('exceptionRaisedOn',ExceptionRecordsList)" style="cursor:pointer">Date Time</th>
+      <th (click)="SortRecords('answerId',ExceptionRecordsList)" style="cursor:pointer">CC Response Id</th>
+      <th (click)="SortRecords('exceptionRaisedAt',ExceptionRecordsList)" style="cursor:pointer">Raised at</th>
+      <th>Archive</th>
+      <th> Retry</th>
+      <th>View Details</th>
+    </tr>
+  </thead>
+  <tbody *ngFor="#Record of ExceptionRecordsList ;#i= index">
+    <tr>
+      <td>{{GetDate(Record.exceptionRaisedOn)}}</td>
+      <td>{{GetAnswerID(Record)}}</td>
+      <td>{{Record.exceptionRaisedAt}}</td>
+      <td>
+        <div class="checkbox">
+          <label><input type="checkbox" id="{{Record._id}}" [(ngModel)]="Record.archive" value="" ></label>
+        </div>
+      </td>
+      <td>
+        <div class="checkbox">
+          <label><input type="checkbox" id="{{Record._id}}" [(ngModel)]="Record.trigger" value=""></label>
+        </div>
+      </td>
+      <td>
+        <button type="button" class="btn btn-primary" (click)="ShowModal(Record)">View Details</button>
+      </td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr *ngIf="ExceptionRecordsList.length==0">
+      <td colspan=6 style="text-align:center"> No data exist</td>
+    </tr>
+  </tfoot>
+</table>
+<!-- End of table -->
+
+<div id="myModal" class="modal fade" *ngIf="Modalpopup" style="width:70%;display: block; opacity: 1;margin-top:50px;margin-left:15%; ">
+  <div>
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" (click)="CloseModal()">&times;</button>
+        <h4 class="modal-title">{{modalTitle}}</h4>
+      </div>
+      <div class="modal-body" style="overflow-y: auto;height:500px; ">
+        <h4>Exception Details </h4>
+        <table class="table table-bordered" style="padding-right:10px">
+          <tbody>
+            <tr>
+
+              <td>
+                <div style="width:900px;overflow-x: auto"> {{ExceptionDescription}}</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <h4>Response Details </h4>
+        <!-- Paging Needed for the below table -->
+        <!-- Beginning of table -->
+        <table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Response</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="#Record of SurveyResponse;">
+              <td>{{Record.questionText}}</td>
+              <td> <span *ngIf="Record.textInput"> {{Record.textInput}}</span> <span *ngIf="!Record.textInput"> {{Record.numberInput}}</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- End of table -->
+      </div>
+    </div>
+  </div>
+</div>
